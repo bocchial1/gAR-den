@@ -73,7 +73,7 @@ Rejected for v1: full interactive mesh-first web viewer; custom ARKit capture ap
 
 - **Auth** — single user (owner); required for upload and view
 - **Garden** — one garden in v1 (additional gardens later)
-- **Mobile upload UI** — file picker / share into browser; upload; show `processing` → `ready` / `failed`; show preview image when ready
+- **Mobile upload UI** — file picker / share into browser; upload to the single garden; show `processing` → `ready` / `failed`; show preview image when ready
 - **Desktop map UI** — 2D top-down canvas; height color scale; boundary; pan/zoom; version list (latest default; open any ready version; no side-by-side diff)
 - **Empty / error states** — no ready scans; failed version detail + re-upload CTA
 
