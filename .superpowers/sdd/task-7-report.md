@@ -62,5 +62,19 @@ npx vitest run tests/api/uploads.test.ts tests/bake/run-bake.test.ts tests/lib/g
 
 ## Notes / concerns
 
-- The routes accept either `session.user.id` or `session.user.email` when resolving the current user because the current NextAuth config does not explicitly project `id` onto the session object.
 - Task 8+ remains unimplemented.
+
+## Review follow-up fixes
+
+- `src/lib/auth.ts` now configures JWT/session callbacks so `session.user.id` is populated from the authenticated user id, and both upload/scan routes now read that value directly through `getSessionUserId()`.
+- `src/lib/api/uploads-handler.ts` now marks the scan `failed`, stores a truncated `failureReason`, and best-effort removes the raw file when persistence fails after the `ScanVersion` row already exists.
+- Added focused regression coverage for the Auth.js callbacks and for the raw-write failure path that previously left scans stuck in `processing`.
+
+## Fresh verification
+
+```bash
+npx tsc --noEmit
+npx vitest run tests/api/uploads.test.ts tests/auth/credentials.test.ts
+```
+
+**Result:** PASS - typecheck clean; 2 test files, 12 tests passed.

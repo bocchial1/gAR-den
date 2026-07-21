@@ -51,14 +51,21 @@ export async function handleUpload({
     },
   });
 
-  const dir = await ensureStorageDir("gardens", garden.id, scan.id);
-  const rawPath = path.join(dir, `raw${extension}`);
+  let rawPath: string | null = null;
 
-  await fs.writeFile(rawPath, bytes);
-  await getPrisma().scanVersion.update({
-    where: { id: scan.id },
-    data: { rawPath },
-  });
+  try {
+    const dir = await ensureStorageDir("gardens", garden.id, scan.id);
+    rawPath = path.join(dir, `raw${extension}`);
+
+    await fs.writeFile(rawPath, bytes);
+    await getPrisma().scanVersion.update({
+      where: { id: scan.id },
+      data: { rawPath },
+    });
+  } catch (error) {
+    await failScanUpload(scan.id, rawPath, error);
+    throw error;
+  }
 
   if (startBake) {
     void runBake(scan.id);
@@ -68,4 +75,30 @@ export async function handleUpload({
     scanId: scan.id,
     status: "processing",
   };
+}
+
+async function failScanUpload(
+  scanId: string,
+  rawPath: string | null,
+  error: unknown,
+) {
+  if (rawPath) {
+    await fs.rm(rawPath, { force: true }).catch(() => undefined);
+  }
+
+  await getPrisma()
+    .scanVersion.update({
+      where: { id: scanId },
+      data: {
+        status: "failed",
+        failureReason: truncateFailureReason(error),
+        rawPath: null,
+      },
+    })
+    .catch(() => undefined);
+}
+
+function truncateFailureReason(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  return message.slice(0, 500);
 }

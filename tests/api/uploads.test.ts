@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import fsPromises from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
@@ -6,13 +7,22 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { getPrisma } from "../../src/lib/db";
 import { ensureGardenUser } from "../../scripts/ensure-user";
 
-const { authMock, afterMock } = vi.hoisted(() => ({
-  authMock: vi.fn(),
-  afterMock: vi.fn(),
-}));
+const { authMock, afterMock, getSessionUserIdMock } = vi.hoisted(() => {
+  const authMock = vi.fn();
+
+  return {
+    authMock,
+    afterMock: vi.fn(),
+    getSessionUserIdMock: vi.fn(async () => {
+      const session = await authMock();
+      return session?.user?.id ?? null;
+    }),
+  };
+});
 
 vi.mock("@/lib/auth", () => ({
   auth: authMock,
+  getSessionUserId: getSessionUserIdMock,
 }));
 
 vi.mock("next/server", () => ({
@@ -120,6 +130,38 @@ describe("upload API", () => {
         startBake: false,
       }),
     ).rejects.toMatchObject({ status: 413 });
+  });
+
+  it("marks the scan failed when writing the raw upload fails", async () => {
+    const user = await getUser("test@garden.local");
+    const writeFileSpy = vi
+      .spyOn(fsPromises, "writeFile")
+      .mockRejectedValueOnce(new Error("disk full"));
+
+    try {
+      await expect(
+        handleUpload({
+          userId: user.id,
+          filename: "broken.glb",
+          bytes: Buffer.from("broken"),
+          startBake: false,
+        }),
+      ).rejects.toThrow("disk full");
+    } finally {
+      writeFileSpy.mockRestore();
+    }
+
+    const failed = await getPrisma().scanVersion.findFirstOrThrow({
+      where: {
+        sourceFilename: "broken.glb",
+        garden: { userId: user.id },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    expect(failed.status).toBe("failed");
+    expect(failed.failureReason).toContain("disk full");
+    expect(failed.rawPath).toBeNull();
   });
 
   it("POST returns 401 without an authenticated user", async () => {

@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { getSessionUserId } from "@/lib/auth";
 import { getPrisma } from "@/lib/db";
 
 type RouteContext = {
@@ -6,7 +6,7 @@ type RouteContext = {
 };
 
 export async function GET(_request: Request, context: RouteContext) {
-  const userId = await resolveAuthenticatedUserId();
+  const userId = await getSessionUserId();
   if (!userId) {
     return Response.json({ message: "Unauthorized" }, { status: 401 });
   }
@@ -53,24 +53,4 @@ export async function GET(_request: Request, context: RouteContext) {
     hasBoundary: Boolean(scan.boundaryPath),
     hasPreview: Boolean(scan.previewPath),
   });
-}
-
-async function resolveAuthenticatedUserId() {
-  const session = await auth();
-  const user = session?.user as { id?: string | null; email?: string | null } | undefined;
-
-  if (user?.id) {
-    return user.id;
-  }
-
-  if (!user?.email) {
-    return null;
-  }
-
-  const record = await getPrisma().user.findUnique({
-    where: { email: user.email },
-    select: { id: true },
-  });
-
-  return record?.id ?? null;
 }

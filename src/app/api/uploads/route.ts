@@ -1,13 +1,12 @@
 import { after } from "next/server";
 
-import { auth } from "@/lib/auth";
+import { getSessionUserId } from "@/lib/auth";
 import { runBake } from "@/lib/bake/run-bake";
-import { getPrisma } from "@/lib/db";
 import { handleUpload, HttpError } from "@/lib/api/uploads-handler";
 
 export async function POST(request: Request) {
   try {
-    const userId = await resolveAuthenticatedUserId();
+    const userId = await getSessionUserId();
     if (!userId) {
       return Response.json({ message: "Unauthorized" }, { status: 401 });
     }
@@ -33,26 +32,6 @@ export async function POST(request: Request) {
   } catch (error) {
     return toErrorResponse(error);
   }
-}
-
-async function resolveAuthenticatedUserId() {
-  const session = await auth();
-  const user = session?.user as { id?: string | null; email?: string | null } | undefined;
-
-  if (user?.id) {
-    return user.id;
-  }
-
-  if (!user?.email) {
-    return null;
-  }
-
-  const record = await getPrisma().user.findUnique({
-    where: { email: user.email },
-    select: { id: true },
-  });
-
-  return record?.id ?? null;
 }
 
 function toErrorResponse(error: unknown) {
