@@ -1,0 +1,9 @@
+node_modules/
+.next/
+coverage/
+storage/
+.env
+prisma/*.db
+*.db
+storage-test/
+tsconfig.tsbuildinfo

@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  gardens      Garden[]
+  createdAt    DateTime @default(now())
+}
+
+model Garden {
+  id        String        @id @default(cuid())
+  name      String        @default("Home garden")
+  userId    String
+  user      User          @relation(fields: [userId], references: [id])
+  scans     ScanVersion[]
+  createdAt DateTime      @default(now())
+}
+
+model ScanVersion {
+  id             String   @id @default(cuid())
+  gardenId       String
+  garden         Garden   @relation(fields: [gardenId], references: [id])
+  status         String
+  failureReason  String?
+  sourceFilename String?
+  rawPath        String?
+  heightmapPath  String?
+  boundaryPath   String?
+  previewPath    String?
+  minZ           Float?
+  maxZ           Float?
+  widthMeters    Float?
+  heightMeters   Float?
+  createdAt      DateTime @default(now())
+}
