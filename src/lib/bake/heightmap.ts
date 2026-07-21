@@ -89,7 +89,7 @@ export function bakeHeightmap(mesh: MeshGeometry, resolution = 256): BakeResult 
         const v = orient(cx, cy, ax, ay, x, y) / area;
         const w = orient(ax, ay, bx, by, x, y) / area;
 
-        if (u <= EPSILON || v <= EPSILON || w <= EPSILON) {
+        if (u < -EPSILON || v < -EPSILON || w < -EPSILON) {
           continue;
         }
 

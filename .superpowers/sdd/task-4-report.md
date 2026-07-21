@@ -71,3 +71,38 @@ npm test
 ## Out of scope
 
 Tasks 5+ not implemented.
+
+## Task 4 review follow-up fix
+
+### Findings addressed
+
+- Fixed edge-inclusive coverage in `src/lib/bake/heightmap.ts` by treating barycentric weights on triangle edges as inside unless they fall below a small negative epsilon. This preserves the existing mesh-wide `minZ` normalization.
+- Added a regression in `tests/bake/heightmap.test.ts` for `slabMesh()` at `resolution = 1`, asserting the single cell is covered and normalizes to height `0`.
+- Tightened the boundary-mask test to use a partial triangle mesh so it verifies covered vs uncovered cells without depending on the old edge-exclusion bug.
+
+### Test output
+
+`npx vitest run tests/bake/heightmap.test.ts`
+
+```text
+RUN  v4.1.10 /workspace
+
+Test Files  1 passed (1)
+     Tests  6 passed (6)
+Start at  20:48:05
+Duration  165ms (transform 27ms, setup 0ms, import 36ms, tests 11ms, environment 0ms)
+```
+
+`npm test`
+
+```text
+> gar-den@0.1.0 test
+> vitest run
+
+RUN  v4.1.10 /workspace
+
+Test Files  4 passed (4)
+     Tests  11 passed (11)
+Start at  20:48:10
+Duration  612ms (transform 112ms, setup 0ms, import 212ms, tests 588ms, environment 0ms)
+```

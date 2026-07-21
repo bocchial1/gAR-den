@@ -49,7 +49,7 @@ describe("bakeHeightmap", () => {
   });
 
   it("marks boundary only where geometry exists", () => {
-    const result = bakeHeightmap(slabMesh(), 32);
+    const result = bakeHeightmap(nonIndexedTriangleMesh(), 32);
 
     const ones = [...result.boundary].filter((value) => value === 1).length;
     const zeros = [...result.boundary].filter((value) => value === 0).length;
@@ -70,6 +70,15 @@ describe("bakeHeightmap", () => {
 
     expect(result.cols).toBe(256);
     expect(result.rows).toBe(128);
+  });
+
+  it("treats triangle edges as covered at low resolution", () => {
+    const result = bakeHeightmap(slabMesh(), 1);
+
+    expect(result.cols).toBe(1);
+    expect(result.rows).toBe(1);
+    expect(result.boundary[0]).toBe(1);
+    expect(result.heightmap[0]).toBeCloseTo(0, 5);
   });
 
   it("supports non-indexed triangle meshes", () => {
