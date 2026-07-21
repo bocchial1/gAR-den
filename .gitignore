@@ -5,3 +5,4 @@ storage/
 .env
 prisma/*.db
 *.db
+storage-test/
