@@ -714,7 +714,7 @@ git commit -m "feat: bake job writes heightmap boundary preview"
 - Produces:
   - `POST /api/uploads` multipart field `file` → `{ scanId: string, status: "processing" }`
   - Rejects if unauthenticated (401), missing file (400), unsupported ext (400), size > 50_000_000 bytes (413)
-  - Creates `ScanVersion` `processing`, saves raw under `storage/gardens/{gardenId}/{scanId}/raw{ext}`, then **void** `runBake(scanId)` without blocking the HTTP response (use `after` from `next/server` or `setImmediate`/`queueMicrotask` + floating promise with `.catch` logging)
+  - Creates `ScanVersion` `processing`, saves raw under `storage/gardens/{gardenId}/{scanId}/raw{ext}`, then schedules bake with Next.js `after(() => { void runBake(scanId) })` so the HTTP response returns immediately while bake continues
   - `GET /api/scans/[id]` → scan JSON for owner’s garden only (404 otherwise)
 
 - [ ] **Step 1: Write the failing test**
@@ -941,7 +941,7 @@ git commit -m "feat: serve heightmap boundary preview assets"
 - Consumes: `POST /api/uploads`, `GET /api/scans/[id]`
 - Produces: mobile-first page — large file input accepting `.glb,.gltf,.obj,.zip`, submit, poll status every 2s until `ready|failed`, show preview `<img src={/api/scans/id/assets/preview}>` on ready, error text on failed
 
-- [ ] **Step 1: Write a lightweight component test or Playwright smoke if already configured; otherwise a Vitest DOM test of status rendering**
+- [ ] **Step 1: Write the failing status-label test**
 
 ```ts
 // tests/components/scan-status.test.tsx
