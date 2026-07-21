@@ -63,7 +63,6 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               required
               name="email"
               type="email"
-              defaultValue={process.env.GARDEN_USER_EMAIL}
               className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none ring-0 placeholder:text-slate-400 focus:border-emerald-500"
             />
           </label>

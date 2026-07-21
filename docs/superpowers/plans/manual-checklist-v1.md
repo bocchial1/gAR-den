@@ -1,6 +1,6 @@
 # v1 manual checklist
 - [ ] Login works with env credentials
-- [ ] Upload tiny-slab.glb on desktop → ready + preview
+- [ ] Upload `tests/fixtures/tiny-slab.glb` on desktop → ready + preview
 - [ ] Garden shows height map for latest
 - [ ] Second upload becomes current; first remains in version list
 - [ ] Corrupt file → failed; previous ready still current

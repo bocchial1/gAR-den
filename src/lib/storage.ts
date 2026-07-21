@@ -2,7 +2,16 @@ import fs from "node:fs/promises";
 import path from "node:path";
 
 export function storageRoot(): string {
-  return path.resolve(process.env.STORAGE_ROOT || "./storage");
+  const configuredRoot = process.env.STORAGE_ROOT;
+
+  if (configuredRoot && path.isAbsolute(configuredRoot)) {
+    return configuredRoot;
+  }
+
+  return path.join(
+    /* turbopackIgnore: true */ process.cwd(),
+    configuredRoot || "storage",
+  );
 }
 
 export function storagePath(...parts: string[]): string {
