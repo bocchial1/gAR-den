@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Home() {
   return (
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col justify-center px-6 py-24">
@@ -11,6 +13,20 @@ export default function Home() {
         Next.js, Vitest, and Prisma are wired up at the repository root for
         the initial greenfield build.
       </p>
+      <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+        <Link
+          href="/upload"
+          className="rounded-xl bg-emerald-600 px-5 py-3 text-center font-medium text-white"
+        >
+          Open upload flow
+        </Link>
+        <Link
+          href="/garden"
+          className="rounded-xl border border-slate-300 bg-white px-5 py-3 text-center font-medium text-slate-800"
+        >
+          Open garden view
+        </Link>
+      </div>
     </main>
   );
 }
